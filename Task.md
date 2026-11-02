@@ -14,24 +14,28 @@
 
 ---
 
-## Current: M1 "Bonfire Save-Point" & SRP Refactoring (In Progress 🔄)
+## Current: M1 "Bonfire Save-Point" & SRP Refactoring (Completed ✅)
 - [x] Document [ADR-002: Package Structure & SRP Refactoring](docs/ADR-002-package-structure-and-srp-refactoring.md).
 - [x] Distill session context into [ROADMAP.md](docs/ROADMAP.md) & [PROGRESS.md](docs/PROGRESS.md).
 - [x] Create [ARCHITECTURE.md](docs/ARCHITECTURE.md) & [SPEC_UABI.md](docs/SPEC_UABI.md).
-- [ ] Create `pyproject.toml` and directory skeleton (`src/mrc/`, `hooks/`, `tests/`).
-- [ ] Refactor modular Python packages:
-  - [ ] `src/mrc/config.py` (Paths and config loader)
-  - [ ] `src/mrc/guardrails.py` (Tier 1 & Tier 3 logic)
-  - [ ] `src/mrc/session_grant.py` (Tier 4 Gate-2 injection & cleanup)
-  - [ ] `src/mrc/formatting.py` (Diff rendering & Telegram HTML)
-  - [ ] `src/mrc/telegram_client.py` (Telegram API client & single poller)
-  - [ ] `src/mrc/daemon.py` (Threaded HTTP server & registry)
-- [ ] Implement entry points in `hooks/pre_tool_use.py` and `hooks/post_tool_use.py`.
-- [ ] Provide backward-compatible root shims (`mrc_bridge.py`, `mrc_cleanup.py`, `mrc_daemon.py`).
-- [ ] Migrate tests to standard modular layout (`tests/test_guardrails.py`, `tests/test_session_grant.py`, `tests/test_daemon.py`).
-- [ ] Verify test suite passes via `python -m unittest discover -s tests -v`.
-- [ ] Write comprehensive [README.md](README.md) save-point guide.
-- [ ] Toggle `"telegram_enabled": true` in `config.json` and validate live Telegram remote control & auto-accept.
+- [x] Create `pyproject.toml` and directory skeleton (`src/mrc/`, `hooks/`, `tests/`).
+- [x] Refactor modular Python packages:
+  - [x] `src/mrc/config.py` (Paths and config loader)
+  - [x] `src/mrc/guardrails.py` (Tier 1 & Tier 3 logic)
+  - [x] `src/mrc/session_grant.py` (Tier 4 Gate-2 injection & cleanup)
+  - [x] `src/mrc/formatting.py` (Diff rendering & Telegram HTML)
+  - [x] `src/mrc/telegram_client.py` (Telegram API client & single poller)
+  - [x] `src/mrc/daemon.py` (Threaded HTTP server & registry)
+- [x] Implement entry points in `hooks/pre_tool_use.py` and `hooks/post_tool_use.py`.
+- [x] Provide backward-compatible root shims (`mrc_bridge.py`, `mrc_cleanup.py`, `mrc_daemon.py`).
+- [x] Migrate tests to standard modular layout (`tests/test_guardrails.py`, `tests/test_session_grant.py`, `tests/test_daemon.py`).
+- [x] Verify test suite passes via `python -m unittest discover -s tests -v`.
+- [x] Write comprehensive [README.md](README.md) save-point guide.
+- [x] Toggle `"telegram_enabled": true` in `config.json` and validate live Telegram remote control & auto-accept.
+- [x] Implement Desk-First Grace Period (4s local keyboard window before mobile escalation).
+- [x] Implement Universal Transient Gate-2 Session Grants (commands + filesystem operations).
+- [x] Add automated test suite for Desk Grace Period (`tests/test_desk_grace.py`).
+- [x] Save-point commits recorded (`ed27021`, `b845280`).
 
 ---
 

@@ -21,7 +21,10 @@ SRC_DIR = os.path.join(PROJECT_ROOT, "src")
 if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
-from mrc.config import DAEMON_URL, load_config, is_telegram_enabled
+from mrc.config import (
+    DAEMON_URL, load_config, is_telegram_enabled,
+    get_local_grace_period_seconds
+)
 from mrc.guardrails import (
     is_hard_deny, is_brain_artifact,
     is_eligible_for_auto_accept, build_permission_overrides
@@ -164,9 +167,10 @@ def main():
     auto_accept_eligible = is_eligible_for_auto_accept(tool_name, args, workspace_paths)
     timeout_sec = auto_accept_timeout if (remote_auto_accept and auto_accept_eligible) else default_timeout
 
+    cmd_info = args.get("CommandLine", "") or args.get("TargetFile", "") or tool_name
+
     # LOCAL-ONLY WORKSTATION MODE (When Telegram is paused)
     if not telegram_enabled:
-        cmd_info = args.get("CommandLine", "") or args.get("TargetFile", "") or tool_name
         sys.stderr.write(
             f"\n⚡ [Mobile Remote Control: Local Machine Mode (Telegram Paused)]\n"
             f"   Tool: {tool_name} -> {cmd_info[:60]}\n"
@@ -174,9 +178,39 @@ def main():
         )
         sys.stderr.flush()
         grant_transient_permission(payload)
-        send_decision("allow", "Local workstation execution approved (Telegram paused)", overrides=overrides)
+        send_decision("allow", "Local workstation execution approved (Telegram paused)")
 
-    # TIER 4: Remote Mobile Approval Mode (Daemon active)
+    # STAGE 1: Desk-First Local Grace Window (Desk Priority)
+    grace_period = get_local_grace_period_seconds()
+    if grace_period > 0:
+        sys.stderr.write(
+            f"\n⚡ [Desk Grace Window ({grace_period}s)] {tool_name} -> {cmd_info[:60]}\n"
+            f"   👉 Press [Y] to approve locally | [N] to deny | (Escalating to phone in {grace_period}s)...\n\n"
+        )
+        sys.stderr.flush()
+
+        grace_start = time.time()
+        while (time.time() - grace_start) < grace_period:
+            key = check_local_keypress()
+            if key == "allow":
+                sys.stderr.write(f"\n✅ [Local Desk Approved] Workstation keypress [Y]\n\n")
+                sys.stderr.flush()
+                grant_transient_permission(payload)
+                send_decision("allow", "Approved at workstation keyboard")
+                return
+            elif key == "deny":
+                sys.stderr.write(f"\n❌ [Local Desk Denied] Workstation keypress [N]\n\n")
+                sys.stderr.flush()
+                send_decision("deny", "Denied at workstation keyboard")
+                return
+            time.sleep(0.05)
+
+    # STAGE 2: AFK Escalation to Remote Mobile Approval Mode (Daemon active)
+    sys.stderr.write(
+        f"\n📡 [AFK Escalation] No local desk input detected — escalating to Telegram (@antiex_bot)...\n"
+    )
+    sys.stderr.flush()
+
     daemon_ok = ensure_daemon_running()
     if not daemon_ok:
         sys.stderr.write("\n⚠️ [MRC] Background daemon unavailable, falling back to terminal.\n")
@@ -251,7 +285,7 @@ def main():
         sys.stderr.write(f"\n✅ [MRC Approved] Decision: ALLOW via {source}\n\n")
         sys.stderr.flush()
         grant_transient_permission(payload)
-        send_decision("allow", f"Approved via {source}", overrides=overrides)
+        send_decision("allow", f"Approved via {source}")
     elif decision == "deny":
         sys.stderr.write(f"\n❌ [MRC Denied] Decision: DENY via {source}\n\n")
         sys.stderr.flush()

@@ -20,6 +20,12 @@ DAEMON_PORT = 48201
 DAEMON_URL = f"http://{DAEMON_HOST}:{DAEMON_PORT}"
 
 
+# Timing defaults
+DEFAULT_TIMEOUT_SECONDS = 90
+DEFAULT_AUTO_ACCEPT_TIMEOUT_SECONDS = 8
+DEFAULT_LOCAL_GRACE_PERIOD_SECONDS = 4
+
+
 def load_config() -> dict:
     """Load configuration from config.json with fallback defaults."""
     if not os.path.exists(CONFIG_PATH):
@@ -34,3 +40,13 @@ def load_config() -> dict:
 def is_telegram_enabled() -> bool:
     """Check if remote Telegram dispatch is active."""
     return load_config().get("telegram_enabled", False)
+
+
+def get_local_grace_period_seconds() -> int:
+    """Get local desk keyboard grace period before escalating to Telegram."""
+    val = load_config().get("local_grace_period_seconds", DEFAULT_LOCAL_GRACE_PERIOD_SECONDS)
+    try:
+        return max(0, int(val))
+    except (ValueError, TypeError):
+        return DEFAULT_LOCAL_GRACE_PERIOD_SECONDS
+
