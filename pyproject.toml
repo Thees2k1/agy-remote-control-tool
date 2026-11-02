@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mobile-remote-control"
+version = "0.1.0"
+description = "Mobile Remote Control (MRC) - Hybrid Ask-First Guardrails & Out-of-Band Remote Approval for Google Antigravity"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Antigravity Team" }
+]
+dependencies = []
+
+[project.scripts]
+mrc-daemon = "mrc.daemon:main"
+mrc-hook-pre = "hooks.pre_tool_use:main"
+mrc-hook-post = "hooks.post_tool_use:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

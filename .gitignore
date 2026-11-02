@@ -1,0 +1,17 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Runtime and transient session states
+session_grants.json
+last_hook_payload.json
+last_decision_sent.json
+*.log
+
+# Environments and IDE
+.env
+.venv/
+venv/
+.idea/
+.vscode/

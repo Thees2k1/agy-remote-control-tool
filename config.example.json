@@ -1,0 +1,9 @@
+{
+  "bot_token": "YOUR_TELEGRAM_BOT_TOKEN_HERE",
+  "chat_id": 123456789,
+  "timeout_seconds": 90,
+  "remote_auto_accept": true,
+  "auto_accept_timeout_seconds": 8,
+  "fallback_to_terminal_on_timeout": true,
+  "telegram_enabled": true
+}
