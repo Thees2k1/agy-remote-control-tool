@@ -1,0 +1,10 @@
+{
+  "toolCall": {
+    "name": "run_command",
+    "args": {
+      "CommandLine": "echo test_override"
+    }
+  },
+  "stepIdx": 42,
+  "conversationId": "test-session-1234"
+}

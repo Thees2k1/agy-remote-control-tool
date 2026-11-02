@@ -1,0 +1,7 @@
+{
+  "decision": "allow",
+  "reason": "Local workstation execution approved (Telegram paused)",
+  "permissionOverrides": [
+    "command(git status)"
+  ]
+}

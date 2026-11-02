@@ -1,0 +1,12 @@
+{
+  "toolCall": {
+    "name": "write_to_file",
+    "args": {
+      "TargetFile": "D:/Workplace/packages/example/main.dart",
+      "CodeContent": "void main() {\n  print('Hello from mobile approval!');\n}\n",
+      "Description": "Test file creation"
+    }
+  },
+  "stepIdx": 42,
+  "conversationId": "test-session-1234"
+}
