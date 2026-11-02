@@ -78,6 +78,20 @@ flowchart TD
 
 ---
 
+---
+
+### Incident 4: Duplicate GUI Approval Prompt on Remote Allow
+* **Incident Description**:
+  - Remote mobile approval succeeded on Telegram, but the Antigravity desktop Electron UI still displayed a tool confirmation review card, requiring a second manual approval on the host machine.
+* **Investigation**:
+  - When the hook outputted `{"decision": "allow", "permissionOverrides": ["command(...)"]}`, the internal Go harness interpreted `permissionOverrides` as a requested elevation rather than a settled authorization.
+  - The internal schema notes that `permissionOverrides` is only evaluated when `decision == "ask"`.
+* **Resolution**:
+  - Modified [pre_tool_use.py](file:///C:/Users/tongn/.gemini/antigravity/scratch/mrc-prototype/hooks/pre_tool_use.py) so that `permissionOverrides` is strictly suppressed when `decision == "allow"`.
+  - Re-tested with live Telegram button tap: affirmative denial immediately aborted with zero GUI prompt; remote allow executed directly.
+
+---
+
 ## Milestone 1 Verification Matrix
 
 | Verification Target | Test Method | Outcome | Status |
@@ -89,7 +103,12 @@ flowchart TD
 | **Tier 3: Safe Command Auto-Accept** | `git status`, `fvm flutter test`, `npm test` | Classified eligible for 8s timer | ✅ PASSED |
 | **Tier 3: Destructive Command Review** | `Remove-Item`, `npm publish`, root manifest edits | Classified ineligible; 90s timer | ✅ PASSED |
 | **Tier 4: Transient Session Grants** | Injected grant into `settings.json` for `stepIdx` | Successfully satisfied Gate 2 | ✅ PASSED |
-| **Tier 4: PostToolUse Cleanup** | Trigger `mrc_cleanup.py` | Grant purged from `settings.json` & grants file removed | ✅ PASSED |
-| **Daemon Concurrency & Polling** | `test_suite_m1.py` unit suite | 3/3 tests passed in 0.051s | ✅ PASSED |
+| **Tier 4: PostToolUse Cleanup** | Trigger `post_tool_use.py` | Grant purged from `settings.json` & grants file removed | ✅ PASSED |
+| **Modular SRP Unit Suite** | `python -m unittest discover -s tests -v` | 10/10 tests passed in 0.020s | ✅ PASSED |
+| **Legacy Compatibility Suite** | `test_suite_m1.py` unit suite | 3/3 tests passed in 0.043s | ✅ PASSED |
+| **GUI Double-Prompt Suppression** | Suppressed `permissionOverrides` on `allow` | Pure `decision: "allow"` emitted | ✅ PASSED |
+| **Live Remote Telegram Interception** | Real-time tool push & mobile `[Deny]` tap | Executed abort with zero GUI prompt | ✅ PASSED |
 | **CLI Runtime Integrity** | `agy --version` & `agy --print "Say Hello M1"` | Executed cleanly; exit code 0 | ✅ PASSED |
 | **Settings Integrity** | Check `settings.json` | Maintained `toolPermission: "request-review"` | ✅ PASSED |
+| **Git Save-Point** | Commit `ed27021` on `main` | Modular package, ADRs & docs committed | ✅ PASSED |
+
