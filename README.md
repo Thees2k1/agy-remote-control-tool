@@ -1,36 +1,43 @@
-# Mobile Remote Control (MRC) for Google Antigravity
+# Mobile Remote Control (MRC) for Google Antigravity (Plugin v0.1.0)
 
-[![Milestone](https://img.shields.io/badge/Milestone-M1%20Verified%20(Bonfire%20Save--Point)-success)](docs/ROADMAP.md)
+[![Milestone](https://img.shields.io/badge/Milestone-M1%20Plugin%20Graduation%20(v0.1.0)-success)](docs/ROADMAP.md)
 [![Architecture](https://img.shields.io/badge/Architecture-ADR--001%20%7C%20ADR--002-blue)](docs/)
+[![Plugin](https://img.shields.io/badge/Antigravity-Native%20Plugin-orange)](plugin.json)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 **Mobile Remote Control (MRC)** transforms your personal smartphone (via Telegram/Discord) into an out-of-band authorization terminal for Google Antigravity (`agy` CLI & GUI). It enables developers to step away from their desk (AFK) while retaining real-time visibility, diff inspection, and one-tap approval over agent tool executions.
 
+Graduated from the M1 Prototype into a native **Google Antigravity Plugin** with Model Context Protocol (MCP) management, chat-scoped hands-free mode, and automatic Antigravity Cloud Remote pairing broadcasts.
+
 ---
 
-## 🛡️ Core Philosophy: "Always Ask — Human in Control"
+## 🚀 Native Plugin Features
 
-Unlike autonomous-by-default models that skip permission prompts, MRC strictly adheres to **Fail-Closed Safety**:
-1. **Host Safety**: Your developer environment maintains `toolPermission: "request-review"` at all times. Wildcard allowlists (`"*"`) and global `"always-proceed"` bypasses are prohibited.
-2. **Two-Gate Harmony**: Remote approvals clear both Gate 1 (extension hook audit) and Gate 2 (native UI confirmation gate) via single-use transient grants, avoiding duplicate prompts without opening security holes.
-3. **Four-Tier Policy Engine**:
-   - **Tier 1 (Inviolable Hard Deny)**: Protects safety configs (`~/.gemini/**`, `hooks.json`, `settings.json`), credentials (`.ssh`, `.aws`, `.env`), and destructive git operations (`push --force`, `reset --hard`, `clean -fd`).
-   - **Tier 2 (Project Allowlists)**: Frictionless auto-approval for internal agent brain artifacts.
-   - **Tier 3 (Scoped Auto-Accept Predicate)**: Safe inspection commands (`git status`, tests) and workspace code edits receive an 8-second countdown. Dangerous/mutating commands require explicit human taps within 90 seconds.
-   - **Tier 4 (Transient Session Grants)**: Remote approvals inject a single-use permission for the active step, purged immediately upon completion by `PostToolUse`.
+- **Native Antigravity Plugin Packaging**: Directly installable into `.agents/plugins/` or `~/.gemini/config/plugins/` with `plugin.json`, declarative `hooks.json`, `rules/AGENTS.md`, and `skills/mrc/SKILL.md`.
+- **Antigravity Cloud Remote Bridge**: Detects native `agy remote-control` state, extracts the active machine instance name, and broadcasts direct `https://antigravity.google.com` links to your Telegram bot.
+- **Chat-Scoped Hands-Free Mode (`mrc handsfree [on|off]`)**: Switch between out-of-band mobile triage and local desktop prompts on a per-session or global basis.
+- **MCP Management Server & Slash Commands (`/mrc`)**: Manage the daemon via stdio MCP tools (`mrc_status`, `mrc_serve`, `mrc_close`, `mrc_toggle_handsfree`, `mrc_cloud_remote`) or direct CLI commands.
+- **Fail-Closed 4-Tier Security**: Maintains `toolPermission: "request-review"` at all times with strict protection for credentials and core configs.
 
 ---
 
 ## 📂 Project Architecture & Layout
 
-Refactored in accordance with [ADR-002](docs/ADR-002-package-structure-and-srp-refactoring.md) to enforce the Single Responsibility Principle (SRP):
-
 ```
 mrc-prototype/
-├── README.md                   # Project landing page & bonfire save-point
+├── plugin.json                 # Antigravity Plugin Manifest (v0.1.0)
+├── hooks.json                  # Declarative Plugin Hooks (SessionStart, PreToolUse, PostToolUse)
+├── mcp_config.json             # Model Context Protocol Server declaration
+├── mrc.py                      # Root CLI entrypoint (`python mrc.py status`)
+├── README.md                   # Project landing page & documentation
 ├── Task.md                     # Roadmap task tracker & checklist
 ├── pyproject.toml              # PEP 621 packaging metadata
 ├── config.json                 # User configuration (token, chat_id, toggles)
+├── rules/
+│   └── AGENTS.md               # Antigravity agent behavior rules & hands-free contract
+├── skills/
+│   └── mrc/
+│       └── SKILL.md            # `/mrc` slash command guide & MCP bindings
 ├── docs/                       # Architectural documentation
 │   ├── ADR-001-guardrail-and-permission-architecture.md
 │   ├── ADR-002-package-structure-and-srp-refactoring.md
@@ -40,7 +47,11 @@ mrc-prototype/
 │   └── SPEC_UABI.md            # Universal Agent-Bridge Interface wire protocol
 ├── src/
 │   └── mrc/                    # Core library package
-│       ├── __init__.py         # Version & exports
+│       ├── __init__.py         # Version (0.1.0) & exports
+│       ├── cli.py              # Unified CLI (`mrc serve|close|status|remote|handsfree`)
+│       ├── cloud_remote.py     # Native `agy remote-control` extractor & broadcaster
+│       ├── mcp_server.py       # MCP stdio JSON-RPC server (mrc-manager)
+│       ├── session_state.py    # Per-conversation hands-free state manager
 │       ├── config.py           # Paths, config loader, environment defaults
 │       ├── guardrails.py       # Tier 1 Hard Deny & Tier 3 Risk Predicates
 │       ├── session_grant.py    # Tier 4 Gate-2 transient injection & cleanup
@@ -48,6 +59,11 @@ mrc-prototype/
 │       ├── telegram_client.py  # Telegram API client & single-poller loop
 │       └── daemon.py           # Threaded HTTP daemon (:48201) & registry
 ├── hooks/                      # Antigravity Lifecycle Hook Entry Points
+│   ├── session_start.py        # SessionStart hook (cloud remote broadcast)
+│   ├── pre_tool_use.py         # PreToolUse hook (stdin -> 4-tier evaluation -> stdout)
+│   └── post_tool_use.py        # PostToolUse cleanup hook (stdin -> purge -> stdout)
+└── tests/                      # Modular Unit Test Suite (38 unit tests)
+```
 │   ├── pre_tool_use.py         # PreToolUse hook (stdin -> 4-tier evaluation -> stdout)
 │   └── post_tool_use.py        # PostToolUse cleanup hook (stdin -> purge -> stdout)
 ├── tests/                      # Modular Unit Test Suite

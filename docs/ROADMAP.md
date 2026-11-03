@@ -26,7 +26,7 @@ flowchart LR
 
 | Milestone | Stage | Tech Stack | Primary Objective | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **M1** | Fast-Track Prototype | Python 3 (stdlib) | Single Telegram chat bot (`@antiex_bot`), 4-tier guardrails, single-poller daemon, transient session grants. | ✅ **COMPLETED** |
+| **M1** | Antigravity Plugin Release (v0.1.0) | Python 3 (stdlib) | Official Antigravity plugin manifest, `/mrc` MCP management, Cloud Remote URL bridge, chat-scoped hands-free mode, 38 unit tests. | ✅ **COMPLETED** |
 | **M1.1** | Architecture & Dart Port Gate | Python -> Dart | Pedagogical walkthrough, formal UABI spec, compiled Dart daemon port for zero-runtime dependencies and high performance. | 🔄 **CURRENT** |
 | **M1.5** | Multi-Client Adapter | Dart / Python | Support multi-agent sessions via Telegram Forum Topics and Discord Channels/Threads. Client-agnostic event model. | ⏳ Planned |
 | **M2** | Native Server Core | Compiled Dart | Production-grade background service (Windows Service / systemd), structured IPC, bidirectional streaming. | ⏳ Planned |
