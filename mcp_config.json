@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "mrc-manager": {
+      "command": "python",
+      "args": ["src/mrc/mcp_server.py"]
+    }
+  }
+}
