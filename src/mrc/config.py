@@ -12,6 +12,7 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(SRC_DIR))
 
 CONFIG_PATH = os.path.join(PROJECT_ROOT, "config.json")
 GRANTS_PATH = os.path.join(PROJECT_ROOT, "session_grants.json")
+SESSION_STATE_PATH = os.path.join(PROJECT_ROOT, "session_state.json")
 CLI_SETTINGS_PATH = os.path.expanduser("~/.gemini/antigravity-cli/settings.json")
 
 # Daemon networking defaults

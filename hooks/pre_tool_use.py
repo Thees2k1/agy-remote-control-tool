@@ -30,6 +30,7 @@ from mrc.guardrails import (
     is_eligible_for_auto_accept, build_permission_overrides
 )
 from mrc.session_grant import grant_transient_permission
+from mrc.session_state import is_handsfree_enabled
 
 try:
     import msvcrt
@@ -157,6 +158,12 @@ def main():
         send_decision("auto_approve", "Auto-approved internal agent brain artifact")
 
     overrides = build_permission_overrides(payload)
+    conversation_id = payload.get("conversationId", "")
+
+    # Chat-scoped hands-free mode check:
+    if not is_handsfree_enabled(conversation_id):
+        send_decision("ask", "MRC hands-free disabled for this session; prompt in terminal.")
+
     config = load_config()
     telegram_enabled = config.get("telegram_enabled", False)
     remote_auto_accept = config.get("remote_auto_accept", False)

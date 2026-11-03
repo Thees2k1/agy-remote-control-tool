@@ -5,6 +5,7 @@ __pycache__/
 
 # Runtime and transient session states
 session_grants.json
+session_state.json
 last_hook_payload.json
 last_decision_sent.json
 *.log
