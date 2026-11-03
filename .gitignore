@@ -20,3 +20,5 @@ venv/
 #local files
 res/
 .worktrees/
+config.json
+
