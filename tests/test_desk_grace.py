@@ -34,11 +34,12 @@ class TestDeskGracePeriod(unittest.TestCase):
     @patch("pre_tool_use.send_decision", side_effect=SystemExit(0))
     @patch("pre_tool_use.grant_transient_permission")
     @patch("pre_tool_use.ensure_daemon_running")
-    def test_desk_keypress_allow_bypasses_telegram(self, mock_daemon, mock_grant, mock_send, mock_key):
-        # When keypress returns "allow", daemon and telegram must NEVER be contacted
+    def test_cli_desk_keypress_allow_bypasses_telegram(self, mock_daemon, mock_grant, mock_send, mock_key):
+        # In CLI, when keypress returns "allow", auto_approve is emitted and daemon is NEVER contacted
         payload = {
             "conversationId": "desk-test-allow",
             "stepIdx": 101,
+            "transcriptPath": "C:/Users/tongn/.gemini/antigravity-cli/transcript.jsonl",
             "toolCall": {
                 "name": "run_command",
                 "args": {"CommandLine": "git status"}
@@ -50,17 +51,18 @@ class TestDeskGracePeriod(unittest.TestCase):
                     pre_tool_use.main()
 
         mock_grant.assert_called_once_with(payload)
-        mock_send.assert_called_once_with("allow", "Approved at workstation keyboard")
+        mock_send.assert_called_once_with("auto_approve", "Approved at workstation keyboard")
         mock_daemon.assert_not_called()
 
     @patch("pre_tool_use.check_local_keypress", return_value="deny")
     @patch("pre_tool_use.send_decision", side_effect=SystemExit(0))
     @patch("pre_tool_use.ensure_daemon_running")
-    def test_desk_keypress_deny_bypasses_telegram(self, mock_daemon, mock_send, mock_key):
-        # When keypress returns "deny", daemon and telegram must NEVER be contacted
+    def test_cli_desk_keypress_deny_bypasses_telegram(self, mock_daemon, mock_send, mock_key):
+        # In CLI, when keypress returns "deny", daemon is NEVER contacted
         payload = {
             "conversationId": "desk-test-deny",
             "stepIdx": 102,
+            "transcriptPath": "C:/Users/tongn/.gemini/antigravity-cli/transcript.jsonl",
             "toolCall": {
                 "name": "run_command",
                 "args": {"CommandLine": "git status"}
@@ -73,6 +75,28 @@ class TestDeskGracePeriod(unittest.TestCase):
 
         mock_send.assert_called_once_with("deny", "Denied at workstation keyboard")
         mock_daemon.assert_not_called()
+
+    @patch("pre_tool_use.check_local_keypress")
+    @patch("pre_tool_use.ensure_daemon_running", return_value=False)
+    @patch("pre_tool_use.fallback_terminal", side_effect=SystemExit(0))
+    def test_gui_surface_skips_grace_and_dispatches_immediately(self, mock_fallback, mock_daemon, mock_key):
+        # In Desktop App GUI (antigravity/), grace period is 0 so it contacts daemon immediately on ms 0
+        payload = {
+            "conversationId": "gui-test-immediate",
+            "stepIdx": 103,
+            "transcriptPath": "C:/Users/tongn/.gemini/antigravity/transcript.jsonl",
+            "toolCall": {
+                "name": "run_command",
+                "args": {"CommandLine": "git status"}
+            }
+        }
+        with patch("sys.stdin.read", return_value=pre_tool_use.json.dumps(payload)):
+            with patch("pre_tool_use.get_local_grace_period_seconds", return_value=4):
+                with self.assertRaises(SystemExit):
+                    pre_tool_use.main()
+
+        mock_daemon.assert_called_once()
+        mock_key.assert_not_called()
 
 
 if __name__ == "__main__":

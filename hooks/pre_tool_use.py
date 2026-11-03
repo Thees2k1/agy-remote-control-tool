@@ -154,7 +154,7 @@ def main():
 
     # TIER 2: Project-Scoped Allowlists (Brain artifacts & safe tools)
     if is_brain_artifact(tool_name, args, artifact_dir):
-        send_decision("allow", "Auto-allowed internal agent brain artifact")
+        send_decision("auto_approve", "Auto-approved internal agent brain artifact")
 
     overrides = build_permission_overrides(payload)
     config = load_config()
@@ -178,10 +178,13 @@ def main():
         )
         sys.stderr.flush()
         grant_transient_permission(payload)
-        send_decision("allow", "Local workstation execution approved (Telegram paused)")
+        send_decision("auto_approve", "Local workstation execution approved (Telegram paused)")
 
-    # STAGE 1: Desk-First Local Grace Window (Desk Priority)
-    grace_period = get_local_grace_period_seconds()
+    # STAGE 1: Desk-First Local Grace Window (Active only in CLI / interactive terminal)
+    transcript_path = payload.get("transcriptPath", "").replace("\\", "/")
+    is_cli = "antigravity-cli" in transcript_path
+    grace_period = get_local_grace_period_seconds() if is_cli else 0
+
     if grace_period > 0:
         sys.stderr.write(
             f"\n⚡ [Desk Grace Window ({grace_period}s)] {tool_name} -> {cmd_info[:60]}\n"
@@ -196,7 +199,7 @@ def main():
                 sys.stderr.write(f"\n✅ [Local Desk Approved] Workstation keypress [Y]\n\n")
                 sys.stderr.flush()
                 grant_transient_permission(payload)
-                send_decision("allow", "Approved at workstation keyboard")
+                send_decision("auto_approve", "Approved at workstation keyboard")
                 return
             elif key == "deny":
                 sys.stderr.write(f"\n❌ [Local Desk Denied] Workstation keypress [N]\n\n")
@@ -206,10 +209,11 @@ def main():
             time.sleep(0.05)
 
     # STAGE 2: AFK Escalation to Remote Mobile Approval Mode (Daemon active)
-    sys.stderr.write(
-        f"\n📡 [AFK Escalation] No local desk input detected — escalating to Telegram (@antiex_bot)...\n"
-    )
-    sys.stderr.flush()
+    if grace_period > 0:
+        sys.stderr.write(
+            f"\n📡 [AFK Escalation] No local desk input detected — escalating to Telegram (@antiex_bot)...\n"
+        )
+        sys.stderr.flush()
 
     daemon_ok = ensure_daemon_running()
     if not daemon_ok:
@@ -282,10 +286,10 @@ def main():
     source = decision_box.get("source") or "timeout"
 
     if decision == "allow":
-        sys.stderr.write(f"\n✅ [MRC Approved] Decision: ALLOW via {source}\n\n")
+        sys.stderr.write(f"\n✅ [MRC Approved] Decision: AUTO_APPROVE via {source}\n\n")
         sys.stderr.flush()
         grant_transient_permission(payload)
-        send_decision("allow", f"Approved via {source}")
+        send_decision("auto_approve", f"Approved via {source}")
     elif decision == "deny":
         sys.stderr.write(f"\n❌ [MRC Denied] Decision: DENY via {source}\n\n")
         sys.stderr.flush()
