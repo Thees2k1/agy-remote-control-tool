@@ -1,0 +1,19 @@
+{
+  "name": "mobile-remote-control",
+  "displayName": "Mobile Remote Control (MRC)",
+  "version": "0.1.0",
+  "description": "Out-of-band mobile authorization terminal, hands-free review, and cloud remote bridge for Google Antigravity",
+  "author": {
+    "name": "Antigravity Team"
+  },
+  "license": "MIT",
+  "keywords": [
+    "antigravity",
+    "remote-control",
+    "authorization",
+    "telegram",
+    "security",
+    "guardrails",
+    "handsfree"
+  ]
+}
