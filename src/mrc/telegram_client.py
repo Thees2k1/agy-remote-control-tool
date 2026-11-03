@@ -71,3 +71,23 @@ def answer_callback(bot_token: str, callback_query_id: str, text: str = "Handled
         "callback_query_id": callback_query_id,
         "text": text
     })
+
+
+class TelegramClient:
+    """Convenience OOP wrapper around Telegram Bot API."""
+    def __init__(self, bot_token: Optional[str] = None, chat_id: Optional[str] = None):
+        from mrc.config import load_config
+        cfg = load_config()
+        self.bot_token = bot_token or cfg.get("telegram_bot_token") or ""
+        self.chat_id = chat_id or cfg.get("telegram_chat_id") or ""
+
+    def send_message(self, text: str, chat_id: Optional[str] = None) -> Dict[str, Any]:
+        target_chat = chat_id or self.chat_id
+        if not self.bot_token or not target_chat:
+            return {"ok": False, "error": "Missing bot token or chat ID"}
+        return telegram_api(self.bot_token, "sendMessage", {
+            "chat_id": target_chat,
+            "text": text,
+            "parse_mode": "HTML"
+        })
+
